@@ -5,3 +5,12 @@
   "I don't do a whole lot ... yet."
   [& args]
   (println "Hello, World!"))
+
+(defn sum-of-multiples-of-3-5
+  "Find sum of all multiples of 3 and 5 from 0 to 1000"
+  (reduce +
+          (filter
+           #(or
+             (zero? (mod % 3))
+             (zero? (mod % 5)))
+           (range 1000))))
