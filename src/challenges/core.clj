@@ -31,3 +31,41 @@
   (reduce +
           (filter even?
            (take 34 (fib 0 1)))))
+
+;; The prime factors of 13195 are 5, 7, 13 and 29.
+;; What is the largest prime factor of the number 600851475143 ?
+(defn factors-of
+  [x]
+  (filter #(zero? (mod x %)) (range 1 x)))
+
+(defn prime?
+  [x]
+  (= (last (factors-of x)) 1))
+
+(defn prime-factors-of
+  [x]
+  (filter prime? (factors-of x)))
+
+(defn greatest-prime-factor-of
+  [x]
+  ; (range 500) : 500 is somewhat arbitrary
+  (let [start 1000]
+    (loop [iteration 1
+           big-number x
+           primes (filter prime? (range start))
+           prime-factors []]
+      (if (> iteration 10)
+        (last prime-factors)
+        (if-let
+            [prime (first (filter #(zero? (mod big-number %)) primes))]
+          (recur (inc iteration)
+                 (/ big-number prime)
+                 primes
+                 (conj prime-factors prime))
+          (recur (inc iteration)
+                 big-number
+                 (filter prime?
+                         (range
+                          (* iteration start)
+                          (+ (* iteration start) start)))
+                 prime-factors))))))
