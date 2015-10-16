@@ -47,8 +47,12 @@
   (filter prime? (factors-of x)))
 
 (defn greatest-prime-factor-of
+  "Considering primes within one [n, n+1000] range at a time,
+  see what primes the big-number is divisible by (= 0 (mod big-number prime)),
+  then take new-big-number = big-number/prime,
+  and find what primes _it_ is divisible by.
+  Once it's iterated 10 times, just call it a day and return the highest of these."
   [x]
-  ; (range 500) : 500 is somewhat arbitrary
   (let [start 1000]
     (loop [iteration 1
            big-number x
