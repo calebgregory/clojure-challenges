@@ -73,3 +73,34 @@
                           (* iteration start)
                           (+ (* iteration start) start)))
                  prime-factors))))))
+
+;; A palindromic number reads the same both ways.
+;; The largest palindrome made from the product of two 2-digit numbers is
+;; 9009 = 91 × 99.
+
+;; Find the largest palindrome made from the product of two 3-digit numbers.
+
+(defn palindrome?
+  [x]
+  (=
+   (clojure.string/reverse (str x))
+   (str x)))
+
+(def products-of-three-digit-nums
+  (for [x (range 100 1000)
+        y (range 100 1000)]
+    (* x y)))
+
+(def largest-palindrome-product
+  (loop [largest 0
+         largest? 0
+         remaining products-of-three-digit-nums]
+    (if (empty? remaining)
+      largest
+      (if (and (palindrome? largest?)
+               (> largest? largest))
+        (recur largest? (first remaining) (rest remaining))
+        (recur largest (first remaining) (rest remaining))))))
+
+(def largest-palindrome-product-2
+  (apply max (filter palindrome? products-of-three-digit-nums)))
