@@ -126,3 +126,20 @@
             result
             (recur result more))
           (recur (inc result) divisors))))))
+
+;; Write a function which removes consecutive duplicates from a sequence.
+;; e.g., "Leeeeeeeeeeroy" => "Leroy"
+
+(defn compress-seq
+  [coll]
+  (loop [result []
+         more coll]
+    (if (empty? more)
+      result
+      (if (= (last result) (first more))
+        (recur result (rest more))
+        (recur (conj result (first more)) (rest more))))))
+
+(defn compress-seq-2
+  [xs]
+  (map first (partition-by identity xs)))
