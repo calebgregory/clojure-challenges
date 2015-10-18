@@ -104,3 +104,25 @@
 
 (def largest-palindrome-product-2
   (apply max (filter palindrome? products-of-three-digit-nums)))
+
+;; 2520 is the smallest number that can be divided by each of the
+;; numbers from 1 to 10 without any remainder.
+
+;; What is the smallest positive number that is evenly divisible
+;; by all of the numbers from 1 to 20?
+
+(defn divides?
+  "This reads 'does x divide y?'"
+  [x y]
+  (= (mod y x) 0))
+
+'(def smallest-evenly-divisible-1-to-20
+  (let [divisors (range 1 20)] ; (= 20 (* 2 10))
+    (loop [result 1
+           remaining-divisors divisors]
+      (let [[divisor & more] remaining-divisors]
+        (if (divides? divisor result)
+          (if (empty? more)
+            result
+            (recur result more))
+          (recur (inc result) divisors))))))
