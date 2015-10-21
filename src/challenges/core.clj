@@ -143,3 +143,25 @@
 (defn compress-seq-2
   [xs]
   (map first (partition-by identity xs)))
+
+;; Write a function which takes a variable number of parameters and returns
+;; the maximum value.
+
+(defn my-max
+  [x & xs]
+  (cond
+   (nil? xs) x
+   (> x (first xs)) (recur x (next xs))
+   :else (recur (first xs) (next xs))))
+
+(defn my-max-2
+  [& args]
+  (apply (comp last sort list) args))
+
+(defn my-max-3
+  [& xs]
+  (reduce #(if (> %1 %2) %1 %2) xs))
+
+(defn my-max-4
+  [& xs]
+  (-> xs sort last))
