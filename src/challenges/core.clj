@@ -1,5 +1,5 @@
 (ns challenges.core
-  (:gen-class))
+  (:use [clojure.string :as str]))
 
 (defn -main
   "I don't do a whole lot ... yet."
@@ -165,3 +165,57 @@
 (defn my-max-4
   [& xs]
   (-> xs sort last))
+
+(defn my-interleave-b
+  [c1 c2]
+  (apply concat
+         (map-indexed
+          (fn [idx itm]
+            (if-let [other-itm (nth c2 idx)]
+              [itm other-itm]
+              nil))
+          c1)))
+
+(defn my-interleave
+  ([] '())
+  ([c1 c2]
+   (cons (first c1)
+         (cons (first c2)
+               (my-interleave (rest c1) (rest c2))))))
+
+(defn exp
+  [base pow]
+  (apply * (repeat pow base)))
+
+(defn is-power-of-4?
+  [x]
+  (loop [n x]
+    (or (= 1 n)
+        (if (zero? (mod n 4))
+          (recur (/ n 4))
+          false))))
+
+
+; accum("abcd") --> "A-Bb-Ccc-Dddd"
+; accum("RqaEzty") --> "R-Qq-Aaa-Eeee-Zzzzz-Tttttt-Yyyyyyy"
+; accum("cwAt") --> "C-Ww-Aaa-Tttt"
+
+(defn accum
+  [str]
+  (->> (map-indexed vector)
+       (map #(repeat (inc (first %)) (second %)))
+       (map str/join)
+       (map str/capitalize)
+       (str/join #"-")))
+
+(defn accum1
+  [str]
+  (let [enum (map-indexed vector str)]
+    (str/join \-
+          (map (fn [[i c]]
+                 (->>
+                  c
+                  (repeat (inc i))
+                  str/join
+                  str/capitalize))
+               enum))))
