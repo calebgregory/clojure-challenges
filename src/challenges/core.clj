@@ -1,5 +1,5 @@
 (ns challenges.core
-  (:use [clojure.string :only [capitalize join]]))
+  (:use [clojure.string :only [capitalize join split]]))
 
 (defn -main
   "I don't do a whole lot ... yet."
@@ -269,3 +269,189 @@
             y (rem m 10)
             n (- x (* 2 y))]
         (recur n (inc i))))))
+
+
+(comment
+  ("One of the first algorithms used for approximating the integer square
+       root of a positive integer n is known as \"Hero's method\", named after
+       the first-century Greek mathematician Hero of Alexandria who gave the
+       first description of the method. Hero's method can be obtained from
+       Newton's method which came 16 centuries after.
+
+       We approximate the square root of a number n by taking an initial
+       guess x, an error e and repeatedly calculating a new approximate value
+       x using: (x + n / x) / 2 ; we are finished when the previous x and the
+       new x have an absolute difference less than e.
+
+       We supply to a function (int_rac) a number n (positive integer) and a
+       parameter guess (positive integer) which will be our initial x. For
+       this kata the parameter 'e' is set to 1.
+
+       Hero's algorithm is not always going to come to an exactly correct
+       result! For instance: if n = 25 we get 5 but for n = 26 we also get
+       5. Nevertheless 5 is the integer square root of 26.
+
+       The kata is to return the count of the progression of approximations
+       that the algorithm makes."))
+
+(comment
+  ("n = n,
+    x = initial-guess,
+    e = 1
+
+    approximate-value = (n, x) => (x + n / x) / 2
+    done when | x - prev x | < e"))
+
+(defn abs [x] (if (> x 0) x (- x)))
+
+(defn int-rac
+  [n guess]
+  (loop [x guess
+         acc [x]]
+    (let [approx (int (/ (+ x (/ n x)) 2))]
+      (if (< (abs (- x approx)) 1)
+        (count acc)
+        (recur approx (conj acc approx))))))
+
+(defn int-rac1
+  [n guess]
+  (loop [x guess
+         i 1]
+    (let [approx (bigint (/ (+' x (/ n x)) 2))]
+      (if (> 1 (abs (- x approx)))
+        i
+        (recur approx (inc i))))))
+
+(comment "A -> 1; B -> 2; ...; Z -> 26; AA -> 27")
+
+(defn title-to-nb
+  [s]
+  (->> (map int s)
+       (map #(- % 64))
+       (reverse)
+       (map-indexed vector)
+       (map (fn [[i x]] (* (exp 26 i) x)))
+       (reduce + 0)))
+
+(defn title-to-nb1
+  [s]
+  (reduce #(+ (* %1 26) (- (int %2) 64)) 0 s))
+
+(comment
+"ABC...
+ 123...
+ 26*10^n (x_n)
+
+A    = 1
+AA   = 27 = 26 + 1
+AZ   = 52 = 26 + 26
+BA   = 53 = 26 + 26 + 1
+BZ   = 78 = 26 + 26 + 26
+CA   = 79 = 26 + 26 + 26 + 1
+
+")
+
+(defn cart
+  [colls]
+  (if (empty? colls)
+    '(())
+    (for [x (first colls)
+          xs (cart (rest colls))]
+      (cons x xs))))
+
+(title-to-nb "CA")
+(title-to-nb "Z")
+
+(comment
+"Flat rate vs. decaying rate...
+
+A movie theater offers two options -
+
+System A : buy a ticket (15 dollars) every time
+System B : buy a card (500 dollars) and every time
+             buy a ticket the price of which is 0.90 times the price
+             paid for the previous one.
+
+for example,
+
+System A : 15 * 3 = 45
+System B : 500 + 15 * 0.90 + (15 * 0.90) * 0.90 + (15 * 0.90 * 0.90) * 0.90
+
+cost = 15 * n
+cost = 500 + (sum as i -> n of 15 * .9 ^ i)")
+
+(defn movie
+  [card ticket perc]
+  (loop [i 0
+         a 0
+         b card]
+    (println (str "i: " i " A: " a " B: " b))
+    (if (< (Math/ceil b) a)
+      i
+      (recur (inc i)
+             (+ a ticket)
+             (+ b (* ticket (apply * (repeat (inc i) perc))))))))
+
+(comment "
+    15 * n                    = 500 + 15 * ( 0.9 ^ n )
+=>  15 * n - 15 * ( 0.9 ^ n ) = 500
+=>  15 * ( n - 0.9 ^ n )      = 500
+=>  n - 0.9 ^ n               = 100 / 3
+
+    15 * n = 500 + 15 * ( 0.9 ^ n )
+=>  0 = 15 * ( 0.9 ^ n ) - 15 * n + 500
+      = 15 * ( 0.9 ^ n - 1 ) + 500
+=>  0 = 0.9 ^ n - n + (100/3)
+f'(n) = (0.9 ^ n) * ln (0.9) - 1
+
+Using the Newton-Raphson method,
+x[i+1] = x[i] - f(x[i])/f'(x[i])
+
+x[i+1] = x[i] - (0.9^x[i] - x[i] + (100/3))/((0.9 ^ n) * ln (0.9) - 1)")
+
+(defn movie1
+  [card ticket perc]
+  (loop [i 1
+         acc '(5000)] ; some 'guess' value
+    (let [x (- (first acc)
+               (/ (+ card (* ticket (- (apply * (repeat i perc)) 1)))
+                  (- (* (apply * (repeat i perc)) (Math/log perc) 1))))]
+      (println (str "i " i " | x " x))
+      (if (> i 10)
+        nil
+        (recur (inc i) (cons x acc))))))
+
+(comment "Take an integer n (n >= 0) and a digit d (0 <= d <= 9) as an
+integer. Square all numbers k (0 <= k <= n) between 0 and n. Count the
+numbers of digits d used in the writing of all the k**2. Call nb_dig
+(or nbDig or ...) the function taking n and d as parameters and
+returning this count.
+
+for example,
+n = 10, d = 1, the k*k are 0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100
+We are using the digit 1 in 1, 16, 81, 100. The total count is then 4.")
+
+(defn to-dig
+  [x]
+  (if (zero? x)
+    [x]
+    (loop [x x acc []]
+      (if (zero? x)
+        acc
+        (recur (quot x 10) (conj acc (rem x 10)))))))
+
+(defn nb-dig
+  [n d]
+  (->> (range 0 (inc n))
+       (map #(* % %))
+       (map to-dig)
+       (flatten)
+       (filter #(= d %))
+       (count)))
+
+(defn to-dig2
+  ([x] (if (= 0 x) [x] (to-dig2 x [])))
+  ([x acc]
+   (if (zero? x)
+     acc
+     (to-dig2 (quot x 10) (conj acc (rem x 10))))))
