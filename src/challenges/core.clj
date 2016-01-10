@@ -270,37 +270,34 @@
             n (- x (* 2 y))]
         (recur n (inc i))))))
 
+;; One of the first algorithms used for approximating the integer square
+;;        root of a positive integer n is known as \"Hero's method\", named after
+;;        the first-century Greek mathematician Hero of Alexandria who gave the
+;;        first description of the method. Hero's method can be obtained from
+;;        Newton's method which came 16 centuries after.
 
-(comment
-  ("One of the first algorithms used for approximating the integer square
-       root of a positive integer n is known as \"Hero's method\", named after
-       the first-century Greek mathematician Hero of Alexandria who gave the
-       first description of the method. Hero's method can be obtained from
-       Newton's method which came 16 centuries after.
+;;        We approximate the square root of a number n by taking an initial
+;;        guess x, an error e and repeatedly calculating a new approximate value
+;;        x using: (x + n / x) / 2 ; we are finished when the previous x and the
+;;        new x have an absolute difference less than e.
 
-       We approximate the square root of a number n by taking an initial
-       guess x, an error e and repeatedly calculating a new approximate value
-       x using: (x + n / x) / 2 ; we are finished when the previous x and the
-       new x have an absolute difference less than e.
+;;        We supply to a function (int_rac) a number n (positive integer) and a
+;;        parameter guess (positive integer) which will be our initial x. For
+;;        this kata the parameter 'e' is set to 1.
 
-       We supply to a function (int_rac) a number n (positive integer) and a
-       parameter guess (positive integer) which will be our initial x. For
-       this kata the parameter 'e' is set to 1.
+;;        Hero's algorithm is not always going to come to an exactly correct
+;;        result! For instance: if n = 25 we get 5 but for n = 26 we also get
+;;        5. Nevertheless 5 is the integer square root of 26.
 
-       Hero's algorithm is not always going to come to an exactly correct
-       result! For instance: if n = 25 we get 5 but for n = 26 we also get
-       5. Nevertheless 5 is the integer square root of 26.
+;;        The kata is to return the count of the progression of approximations
+;;        that the algorithm makes. 
 
-       The kata is to return the count of the progression of approximations
-       that the algorithm makes."))
+;; n = n,
+;;     x = initial-guess,
+;;     e = 1
 
-(comment
-  ("n = n,
-    x = initial-guess,
-    e = 1
-
-    approximate-value = (n, x) => (x + n / x) / 2
-    done when | x - prev x | < e"))
+;;     approximate-value = (n, x) => (x + n / x) / 2
+;;    done when | x - prev x | < e
 
 (defn abs [x] (if (> x 0) x (- x)))
 
@@ -322,7 +319,7 @@
         i
         (recur approx (inc i))))))
 
-(comment "A -> 1; B -> 2; ...; Z -> 26; AA -> 27")
+;; A -> 1; B -> 2; ...; Z -> 26; AA -> 27
 
 (defn title-to-nb
   [s]
@@ -337,19 +334,16 @@
   [s]
   (reduce #(+ (* %1 26) (- (int %2) 64)) 0 s))
 
-(comment
-"ABC...
- 123...
- 26*10^n (x_n)
+;; ABC...
+;;  123...
+;;  26*10^n (x_n)
 
-A    = 1
-AA   = 27 = 26 + 1
-AZ   = 52 = 26 + 26
-BA   = 53 = 26 + 26 + 1
-BZ   = 78 = 26 + 26 + 26
-CA   = 79 = 26 + 26 + 26 + 1
-
-")
+;; A    = 1
+;; AA   = 27 = 26 + 1
+;; AZ   = 52 = 26 + 26
+;; BA   = 53 = 26 + 26 + 1
+;; BZ   = 78 = 26 + 26 + 26
+;; CA   = 79 = 26 + 26 + 26 + 1
 
 (defn cart
   [colls]
@@ -362,23 +356,22 @@ CA   = 79 = 26 + 26 + 26 + 1
 (title-to-nb "CA")
 (title-to-nb "Z")
 
-(comment
-"Flat rate vs. decaying rate...
+;; Flat rate vs. decaying rate...
 
-A movie theater offers two options -
+;; A movie theater offers two options -
 
-System A : buy a ticket (15 dollars) every time
-System B : buy a card (500 dollars) and every time
-             buy a ticket the price of which is 0.90 times the price
-             paid for the previous one.
+;; System A : buy a ticket (15 dollars) every time
+;; System B : buy a card (500 dollars) and every time
+;;              buy a ticket the price of which is 0.90 times the price
+;;              paid for the previous one.
 
-for example,
+;; for example,
 
-System A : 15 * 3 = 45
-System B : 500 + 15 * 0.90 + (15 * 0.90) * 0.90 + (15 * 0.90 * 0.90) * 0.90
+;; System A : 15 * 3 = 45
+;; System B : 500 + 15 * 0.90 + (15 * 0.90) * 0.90 + (15 * 0.90 * 0.90) * 0.90
 
-cost = 15 * n
-cost = 500 + (sum as i -> n of 15 * .9 ^ i)")
+;; cost = 15 * n
+;; cost = 500 + (sum as i -> n of 15 * .9 ^ i)
 
 (defn movie
   [card ticket perc]
@@ -392,22 +385,21 @@ cost = 500 + (sum as i -> n of 15 * .9 ^ i)")
              (+ a ticket)
              (+ b (* ticket (apply * (repeat (inc i) perc))))))))
 
-(comment "
-    15 * n                    = 500 + 15 * ( 0.9 ^ n )
-=>  15 * n - 15 * ( 0.9 ^ n ) = 500
-=>  15 * ( n - 0.9 ^ n )      = 500
-=>  n - 0.9 ^ n               = 100 / 3
+;;     15 * n                    = 500 + 15 * ( 0.9 ^ n )
+;; =>  15 * n - 15 * ( 0.9 ^ n ) = 500
+;; =>  15 * ( n - 0.9 ^ n )      = 500
+;; =>  n - 0.9 ^ n               = 100 / 3
 
-    15 * n = 500 + 15 * ( 0.9 ^ n )
-=>  0 = 15 * ( 0.9 ^ n ) - 15 * n + 500
-      = 15 * ( 0.9 ^ n - 1 ) + 500
-=>  0 = 0.9 ^ n - n + (100/3)
-f'(n) = (0.9 ^ n) * ln (0.9) - 1
+;;     15 * n = 500 + 15 * ( 0.9 ^ n )
+;; =>  0 = 15 * ( 0.9 ^ n ) - 15 * n + 500
+;;       = 15 * ( 0.9 ^ n - 1 ) + 500
+;; =>  0 = 0.9 ^ n - n + (100/3)
+;; f'(n) = (0.9 ^ n) * ln (0.9) - 1
 
-Using the Newton-Raphson method,
-x[i+1] = x[i] - f(x[i])/f'(x[i])
+;; Using the Newton-Raphson method,
+;; x[i+1] = x[i] - f(x[i])/f'(x[i])
 
-x[i+1] = x[i] - (0.9^x[i] - x[i] + (100/3))/((0.9 ^ n) * ln (0.9) - 1)")
+;; x[i+1] = x[i] - (0.9^x[i] - x[i] + (100/3))/((0.9 ^ n) * ln (0.9) - 1
 
 (defn movie1
   [card ticket perc]
@@ -421,15 +413,16 @@ x[i+1] = x[i] - (0.9^x[i] - x[i] + (100/3))/((0.9 ^ n) * ln (0.9) - 1)")
         nil
         (recur (inc i) (cons x acc))))))
 
-(comment "Take an integer n (n >= 0) and a digit d (0 <= d <= 9) as an
-integer. Square all numbers k (0 <= k <= n) between 0 and n. Count the
-numbers of digits d used in the writing of all the k**2. Call nb_dig
-(or nbDig or ...) the function taking n and d as parameters and
-returning this count.
+;; Take an integer n (n >= 0) and a digit d (0 <= d <= 9) as an
+;; integer. Square all numbers k (0 <= k <= n) between 0 and n. Count the
 
-for example,
-n = 10, d = 1, the k*k are 0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100
-We are using the digit 1 in 1, 16, 81, 100. The total count is then 4.")
+;; (or nbDig or ...) the function taking n and d as parameters and
+;; returning this count.
+
+;; for example,
+;; n = 10, d = 1, the k*k are 0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100
+;; We are using the digit 1 in 1, 16, 81, 100. The total count is then 4.
+
 
 (defn to-dig
   [x]
