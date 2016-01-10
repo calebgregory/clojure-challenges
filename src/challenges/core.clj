@@ -448,3 +448,38 @@
    (if (zero? x)
      acc
      (to-dig2 (quot x 10) (conj acc (rem x 10))))))
+
+;; The sum of the squares of the first ten natural numbers is,
+
+;; 1^2 + 2^2 + ... + 10^2 = 385
+;; The square of the sum of the first ten natural numbers is,
+
+;; (1 + 2 + ... + 10)^2 = 552 = 3025 Hence the difference between the sum
+;; of the squares of the first ten natural numbers and the square of the
+;; sum is 3025 − 385 = 2640.
+
+;; Find the difference between the sum of the squares of the first one
+;; hundred natural numbers and the square of the sum.
+
+(defn positive-numbers
+  ([] (positive-numbers 1))
+  ([n] (lazy-seq (cons n (positive-numbers (inc n))))))
+
+(defn sum-of-squares2
+  [n]
+  (reduce + (map #(* % %) (range 0 (inc n)))))
+
+(defn sum-of-squares
+  [n]
+  (reduce #(+ (* %2 %2) %1) 0 (take n (positive-numbers))))
+
+(defn square-of-sums
+  [n]
+  (let [s (reduce + (take n (positive-numbers)))]
+    (* s s)))
+
+(defn diff-sum-of-squares-square-of-sums
+  [n]
+  (let [s-sq (sum-of-squares n)
+        sq-s (square-of-sums n)]
+    (- sq-s s-sq)))
