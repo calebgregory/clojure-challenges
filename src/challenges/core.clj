@@ -1,11 +1,6 @@
 (ns challenges.core
   (:use [clojure.string :only [capitalize join split]]))
 
-(defn -main
-  "I don't do a whole lot ... yet."
-  [& args]
-  (println "Hello, World!"))
-
 ;; If we list all the natural numbers below 10 that are multiples of 3 or 5, we get 3, 5, 6 and 9. The sum of these multiples is 23.
 ;; Find the sum of all the multiples of 3 or 5 below 1000.
 (defn sum-of-multiples-of-3-5
@@ -483,3 +478,165 @@
   (let [s-sq (sum-of-squares n)
         sq-s (square-of-sums n)]
     (- sq-s s-sq)))
+
+;; By listing the first six prime numbers: 2, 3, 5, 7, 11, and 13, we can
+;; see that the 6th prime is 13.
+
+;; What is the 10,001st prime number?
+
+;; "Generates an infinite, lazy sequence of primes"
+(def primes
+  (letfn [(reinsert [table composite prime]
+            (update-in table [(+ composite prime)] conj prime))
+          (generator [table d]
+            (if-let [prime-factors (get table d)]
+              (recur (reduce #(reinsert %1 d %2) (dissoc table d) prime-factors)
+                     (inc d))
+              (lazy-seq (cons d (generator (assoc table (* d d) (list d))
+                                             (inc d))))))]
+    (generator {} 2)))
+
+(take 6 primes) ;; => (2 3 5 7 11 13)
+
+;; d:  2   |  {}
+;; d:  3   |  {4  (2)}
+;; d:  4   |  {4  (2), 9  (3)}
+;; d:  5   |  {9  (3), 6  (2)}
+;; d:  6   |  {9  (3), 6  (2), 25  (5)}
+;; d:  7   |  {9  (3), 25 (5), 8   (2)}
+;; d:  8   |  {9  (3), 25 (5), 8   (2),   49 (7)}
+;; d:  9   |  {9  (3), 25 (5), 49  (7),   10 (2)}
+;; d:  10  |  {25 (5), 49 (7), 10  (2),   12 (3)}
+;; d:  11  |  {25 (5), 49 (7), 12  (2 3)}
+;; d:  12  |  {25 (5), 49 (7), 12  (2 3), 121 (11)}
+;; d:  13  |  {25 (5), 49 (7), 121 (11),  14  (2), 15 (3)}
+
+(def primes1
+  (letfn [(reinsert [table composite prime]
+            (update-in table [(+ composite prime)] conj prime))
+          (generator [table d]
+            (if-let [prime-factors (get table d)]
+              (recur (reduce #(reinsert %1 d %2) (dissoc table d) prime-factors)
+                     (inc d))
+              (lazy-seq (cons d (generator (assoc table (* d d) (list d))
+                                (inc d))))))]
+    (generator {} 2)))
+
+
+;; letfn defines locals accessible witthin the body of the function
+
+;; (vector 1 2 3)   => [1 2 3] ; grows at end
+;; (list 1 2 3)     => (1 2 3) ; grows at beginning
+
+;; (cons 1 '(2 3))  => (1 2 3) ; place 1 at beginning of list (2 3)
+;; (conj [1 2] 3)   => [1 2 3] ; place 3 at end of vector [1 2]
+
+;; (inc 1)          => 2       ; increment
+
+;; (reduce (fn [acc x] (str x acc)) "" ["a" "b" "c"]) => "cba"
+  ;; (reduce) takes a fn, an optional first value to be accumulated upon,
+  ;; and a collection
+;; (str "a" "b")    => "ab"    ; build string
+;; #(+ %2 %1) is shorthand for (fn [x y] (+ y x))
+
+;; lazy-seqs create potentially infinite sequences lazily by (cons)ing
+;; one item onto a list built by recursively calling a function on an
+;; as-needed basis...:
+;; (defn fib [a b] (lazy-seq (cons a (fib b (+ b a)))))
+;; (take 5 fib) => (1 1 2 3 5)
+
+;; (assoc {:a 1} :b 2)      => {:a 1 :b 2}
+   ;; in the map {:a 1}, associate key :b with value 2
+   ;; returns a new map
+;; (dissoc {:a 1 :b 2} :a)  => {:b 2}
+   ;; dissociate :a from map {:a 1 :b 2}
+   ;; also returns a new map
+;; (/ 3 4 5)                => 3/20
+   ;; operators are overloadable
+
+;; operators on the map collection used in primes below
+;; (get {:a 1} :a)          => 1
+;; (update-in {:a 3 :b 1} [:a] / 4 5) => {:a 3/20 :b 1}
+
+(def primes2
+  (letfn [(reinsert [table composite prime]
+            (update-in table [(+ composite prime)] conj prime))
+          (generator [table d]
+            (if-let [prime-factors (get table d)]
+              (recur
+               (reduce #(reinsert %1 d %2) (dissoc table d) prime-factors)
+               (inc d))
+              (lazy-seq
+               (cons d (generator (assoc table (* d d) (list d)) (inc d))))))]
+    (generator {} 2)))
+
+;; The four adjacent digits in the 1000-digit number that have the
+;; greatest product are 9 × 9 × 8 × 9 = 5832.
+
+;; 73167176531330624919225119674426574742355349194934
+;; 96983520312774506326239578318016984801869478851843
+;; 85861560789112949495459501737958331952853208805511
+;; 12540698747158523863050715693290963295227443043557
+;; 66896648950445244523161731856403098711121722383113
+;; 62229893423380308135336276614282806444486645238749
+;; 30358907296290491560440772390713810515859307960866
+;; 70172427121883998797908792274921901699720888093776
+;; 65727333001053367881220235421809751254540594752243
+;; 52584907711670556013604839586446706324415722155397
+;; 53697817977846174064955149290862569321978468622482
+;; 83972241375657056057490261407972968652414535100474
+;; 82166370484403199890008895243450658541227588666881
+;; 16427171479924442928230863465674813919123162824586
+;; 17866458359124566529476545682848912883142607690042
+;; 24219022671055626321111109370544217506941658960408
+;; 07198403850962455444362981230987879927244284909188
+;; 84580156166097919133875499200524063689912560717606
+;; 05886116467109405077541002256983155200055935729725
+;; 71636269561882670428252483600823257530420752963450
+
+;; Find the thirteen adjacent digits in the 1000-digit number that
+;; have the greatest product. What is the value of this product?
+
+(def long-ass-number
+  (str
+   "73167176531330624919225119674426574742355349194934"
+   "96983520312774506326239578318016984801869478851843"
+   "85861560789112949495459501737958331952853208805511"
+   "12540698747158523863050715693290963295227443043557"
+   "66896648950445244523161731856403098711121722383113"
+   "62229893423380308135336276614282806444486645238749"
+   "30358907296290491560440772390713810515859307960866"
+   "70172427121883998797908792274921901699720888093776"
+   "65727333001053367881220235421809751254540594752243"
+   "52584907711670556013604839586446706324415722155397"
+   "53697817977846174064955149290862569321978468622482"
+   "83972241375657056057490261407972968652414535100474"
+   "82166370484403199890008895243450658541227588666881"
+   "16427171479924442928230863465674813919123162824586"
+   "17866458359124566529476545682848912883142607690042"
+   "24219022671055626321111109370544217506941658960408"
+   "07198403850962455444362981230987879927244284909188"
+   "84580156166097919133875499200524063689912560717606"
+   "05886116467109405077541002256983155200055935729725"
+   "71636269561882670428252483600823257530420752963450"))
+
+(defn parse-int [s]
+  (Integer. (re-find #"\d+" s)))
+
+(def long-ass-seq-of-digits
+  (into '() (map parse-int (split long-ass-number #""))))
+
+; * (if (empty? coll)) : insufficient check condition
+;    e.g., could be a problem if n=13 and
+;    13th-from-last item is = 0
+(defn maximum-n-adjacent-product
+  "finds the maximumn product of n adjacent digits in a sequence"
+  [n coll]
+  (loop [coll coll
+         max 0]
+    (if (empty? coll)
+      max
+      (let [max? (reduce * (take n coll))]
+        (if (> max? max)
+          (recur (rest coll) max?)
+          (recur (rest coll) max))))))
