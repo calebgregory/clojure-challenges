@@ -484,9 +484,9 @@
 
 ;; What is the 10,001st prime number?
 
-;; "Generates an infinite, lazy sequence of primes"
 
-;; then (letfn [,,,fns]) form defines locals accessible within the body of
+
+;; the (letfn [,,,fns]) form defines locals accessible within the body of
 ;;   the function
 ;; (recur) calls the function in which it is called with the arguments
 ;;   supplied to it
@@ -526,6 +526,9 @@
    ;; operators are overloadable
 ;; (get {:a 1} :a)          => 1
 ;; (update-in {:a 3 :b 1} [:a] / 4 5) => {:a 3/20 :b 1}
+
+
+;; "Generates an infinite, lazy sequence of primes"
 
 (def primes
   (letfn [(reinsert [table composite prime]
