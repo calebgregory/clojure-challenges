@@ -485,6 +485,48 @@
 ;; What is the 10,001st prime number?
 
 ;; "Generates an infinite, lazy sequence of primes"
+
+;; then (letfn [,,,fns]) form defines locals accessible within the body of
+;;   the function
+;; (recur) calls the function in which it is called with the arguments
+;;   supplied to it
+
+;; (vector 1 2 3)   => [1 2 3] ; grows at end
+;; (list 1 2 3)     => (1 2 3) ; grows at beginning
+
+;; (cons 1 '(2 3))  => (1 2 3) ; place 1 at beginning of list (2 3)
+;; (conj [1 2] 3)   => [1 2 3] ; place 3 at end of vector [1 2]
+;; (conj '(1 2) 3)  => (3 1 2) ; place 3 at beginning of list (1 2)
+  ;; (conj) chooses the most efficient way to append to a list for a
+  ;; given collection type
+
+;; (inc 1)          => 2       ; increment
+
+;; (reduce (fn [acc x] (str x acc)) "" ["a" "b" "c"]) => "cba"
+  ;; (reduce) takes a fn, an optional first value to be accumulated upon,
+  ;;   and a collection
+;; (str "a" "b")    => "ab"    ; build string
+;; #(+ %2 %1) is shorthand for (fn [x y] (+ y x))
+
+;; lazy-seqs create potentially infinite sequences lazily by (cons)ing
+;;   one item onto a list built by recursively calling a function on an
+;;   as-needed basis...:
+;; (defn fib [a b] (lazy-seq (cons a (fib b (+ b a)))))
+;; (take 5 fib) => (1 1 2 3 5)
+
+;; operators on the map collection used in primes below
+
+;; (assoc {:a 1} :b 2)      => {:a 1 :b 2}
+   ;; in the map {:a 1}, associate key :b with value 2
+   ;; returns a new map
+;; (dissoc {:a 1 :b 2} :a)  => {:b 2}
+   ;; dissociate :a from map {:a 1 :b 2}
+   ;; also returns a new map
+;; (/ 3 4 5)                => 3/20
+   ;; operators are overloadable
+;; (get {:a 1} :a)          => 1
+;; (update-in {:a 3 :b 1} [:a] / 4 5) => {:a 3/20 :b 1}
+
 (def primes
   (letfn [(reinsert [table composite prime]
             (update-in table [(+ composite prime)] conj prime))
@@ -493,7 +535,7 @@
               (recur (reduce #(reinsert %1 d %2) (dissoc table d) prime-factors)
                      (inc d))
               (lazy-seq (cons d (generator (assoc table (* d d) (list d))
-                                             (inc d))))))]
+                                           (inc d))))))]
     (generator {} 2)))
 
 (take 6 primes) ;; => (2 3 5 7 11 13)
@@ -511,64 +553,6 @@
 ;; d:  12  |  {25 (5), 49 (7), 12  (2 3), 121 (11)}
 ;; d:  13  |  {25 (5), 49 (7), 121 (11),  14  (2), 15 (3)}
 
-(def primes1
-  (letfn [(reinsert [table composite prime]
-            (update-in table [(+ composite prime)] conj prime))
-          (generator [table d]
-            (if-let [prime-factors (get table d)]
-              (recur (reduce #(reinsert %1 d %2) (dissoc table d) prime-factors)
-                     (inc d))
-              (lazy-seq (cons d (generator (assoc table (* d d) (list d))
-                                (inc d))))))]
-    (generator {} 2)))
-
-
-;; letfn defines locals accessible witthin the body of the function
-
-;; (vector 1 2 3)   => [1 2 3] ; grows at end
-;; (list 1 2 3)     => (1 2 3) ; grows at beginning
-
-;; (cons 1 '(2 3))  => (1 2 3) ; place 1 at beginning of list (2 3)
-;; (conj [1 2] 3)   => [1 2 3] ; place 3 at end of vector [1 2]
-
-;; (inc 1)          => 2       ; increment
-
-;; (reduce (fn [acc x] (str x acc)) "" ["a" "b" "c"]) => "cba"
-  ;; (reduce) takes a fn, an optional first value to be accumulated upon,
-  ;; and a collection
-;; (str "a" "b")    => "ab"    ; build string
-;; #(+ %2 %1) is shorthand for (fn [x y] (+ y x))
-
-;; lazy-seqs create potentially infinite sequences lazily by (cons)ing
-;; one item onto a list built by recursively calling a function on an
-;; as-needed basis...:
-;; (defn fib [a b] (lazy-seq (cons a (fib b (+ b a)))))
-;; (take 5 fib) => (1 1 2 3 5)
-
-;; (assoc {:a 1} :b 2)      => {:a 1 :b 2}
-   ;; in the map {:a 1}, associate key :b with value 2
-   ;; returns a new map
-;; (dissoc {:a 1 :b 2} :a)  => {:b 2}
-   ;; dissociate :a from map {:a 1 :b 2}
-   ;; also returns a new map
-;; (/ 3 4 5)                => 3/20
-   ;; operators are overloadable
-
-;; operators on the map collection used in primes below
-;; (get {:a 1} :a)          => 1
-;; (update-in {:a 3 :b 1} [:a] / 4 5) => {:a 3/20 :b 1}
-
-(def primes2
-  (letfn [(reinsert [table composite prime]
-            (update-in table [(+ composite prime)] conj prime))
-          (generator [table d]
-            (if-let [prime-factors (get table d)]
-              (recur
-               (reduce #(reinsert %1 d %2) (dissoc table d) prime-factors)
-               (inc d))
-              (lazy-seq
-               (cons d (generator (assoc table (* d d) (list d)) (inc d))))))]
-    (generator {} 2)))
 
 ;; The four adjacent digits in the 1000-digit number that have the
 ;; greatest product are 9 × 9 × 8 × 9 = 5832.
